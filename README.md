@@ -54,7 +54,7 @@ docker run -it --rm elastic/eland eland_import_hub_model
      #Query index content
       GET search-homecraft-ikea/_search
 
-7. Before starting crawling we need to attach an ingest pipeline to the newly create index, so every time a new document is indexed, it will be processed by our ML model that will enrich the document with an additional field, the vector representation of its content.
+7. Before start crawling we need to attach an ingest pipeline to the newly create index, so every time a new document is indexed, it will be processed by our ML model that will enrich the document with an additional field, the vector representation of its content.
    - Open the index from the Enterprise Search UI and navigate to the "Pipelines" tab
    - Click on "Copy and customize" to create a custom pipeline associated to this index
    - In the Machine Learning section click on "Add Inference Pipeline"
@@ -63,6 +63,8 @@ docker run -it --rm elastic/eland eland_import_hub_model
    - Select the "Source field". This is the field that the ML model will process to create vectors from, and the UI suggests the ones automatically created from the web crawler. Select the "title" field as source field, leave everything as default and go on untile pipeline is created.
   
 8. Check the newly created ingest pipeline searching it from the "Stack Management" -> "Ingest pipelines" section. You are able to analyze the processors (the processing tasks) listed in the pipeline and add/remove/modify them. Note also that you can specify exception handlers.
+   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/761cf843-c238-4f14-8fc2-47a6157f98b3)
+
 
 9. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm. Let's execute the mapping API from the Dev Tools:
 
@@ -80,7 +82,7 @@ POST search-homecraft-ikea/_mapping
 }
 ```
 
-10. Start crawling: go back on the index and click on the "Start Crawling" button on the top right corner of the page.
+10. Start crawling: go back on the index and click on the "Start Crawling" button on the top right corner of the page. You will see the document count slowly increasing while the web crawler runs.
 
 11. Let's now ingest a product catalog, to let our users search for products via hybrid search (keywords + semantics):
     - Load into Elastic this [Home Depot product catalog](https://www.kaggle.com/datasets/thedevastator/the-home-depot-products-dataset) via the "Upload File" feature (search for it in the top search bar). Click on "Import" and name the index "home-depot-product-catalog"
@@ -121,17 +123,50 @@ POST _reindex
 
   - (Note that we used these steps to show how to use reindexing and ingest pipelines via API. You can still apply the pipelines via UI as done before with the search-homecraft-ikea index)
 
-12. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move a [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic. Take a look ad tables available in this dataset withih BigQuery explorer UI. Copy the ID of the "Order_items" table and create a new Dataflow job to move data from this BQ table to an index named "bigquery-thelook-order-items". You need to create an API key on the Elastic cluster and pass it along with Elastic cluster's cloud_id, user and pass to the job config. This new index will be used for retrieving user orders.
+12. To complete our data baseline we can also import an e-commerce order history. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move this [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic.
+    - Click on "View Dataset" after reaching the Google Console with the previous link
+    - Take a look at the tables available in this dataset within the BigQuery explorer UI. On the left panel open the "thelook_ecommerce" dataset and click on the "Order_items" table. Explore the content
+    - Copy the ID (by clicking on the 3 dots) of the "Order_items" table and search for Dataflow in the Google Cloud service search bar
+    - Create a new Dataflow job from template, selecting the "BigQuery to Elasticsearch" built-in template. You will need to specify:
+      a. The job's name
+      b. The region to run the job in (preferably choose the same you deployed the Elastic cluster in to minimize latencies and costs)
+      c. The Elastic cluster's "cloudID"
+      d. The Elastic API key to let Dataflow connect with Elastic(check [here](https://www.elastic.co/guide/en/cloud/current/ec-api-keys.html) how to generate one)
+      e. The index name as "bigquery-thelook-order-items". Dataflow will automatically create this new index where all the table lines will be sent.
+      f. The dataset and table you want to read from (first field of the Optional Parameters): bigquery-public-data.thelook_ecommerce.order_items
+      g. Elastic username and password
+    - Launch the job
+      
+![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/8708b87f-5855-447d-b6de-db7632a515cb)
 
-13. Create a small Google Cloud Compute Engine machine with default settings, with public ip address and access it via SSH. This will be used as our web-server for the front-ent application hosting our "intelligent search bar"
 
-14. 5. Clone the [homecraft_vertex source-code repo](https://github.com/valerioarvizzigno/homecraft_vertex) on your CE machine.
+This will let users to submit queries for their past orders. We are not creating embeddings on this index because keyword search will suffice (e.g. searching for userID, productID). Wait for the job to complete and check the data is correctly indexed in Elastic from the indices list in the UI.
+
+13. Let's test a Vector Search query directly from the Kibana Dev Tools. We will later see this embedded in our app. You can copy paste the following query from [this file](https://github.com/valerioarvizzigno/homecraft_vertex/blob/main/Additional%20sources/helpful_elastic_api_calls).
+
+![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/1a6e0079-7b51-4791-adfe-6b863037a9b5)
+
+We are executing the classic "_search" API call, to query documents in Elasticsearch. The Semantic Search component is provided by the "knn" clause, where we specify the field we want to search vectors into (title-vector), the number of relevant documents we want to extract and the user provided query. Note that, to compare vectors also the user query has to be translated into text-embeddings from our ML model. We are then specifying the "text_embedding" field in the API call: this will let create vectors on-the-fly on the user query and compare them with the stored documents.
+      
+14. We are now going to deploy our front-end app. Create a small Google Cloud Compute Engine linux machine with default settings, with public IPv4 address enabled, HTTP and HTTPS traffic enabled and access it via SSH. This will be used as our web-server for the front-end application, hosting our "intelligent search bar". We suggest this settings:
+    - e2-medium
+    - Debian11  
+
+15. Update the machine, install git and pip. Check if python is installed (python3 --version), if not run also sudo apt instal python3.
+```bash
+sudo apt-get update
+sudo apt install git #Press Y when prompted
+sudo apt install pip
+
+```
+
+16. Clone the [homecraft_vertex source-code repo](https://github.com/valerioarvizzigno/homecraft_vertex) on your CE machine.
 
 ```bash
 git clone https://github.com/valerioarvizzigno/homecraft_vertex.git
 ```
 
-15. Install requirements needed to run the app from the requirements.txt file
+17. Install requirements needed to run the app from the requirements.txt file. After this step, close the SSH session and reopen it, to ensure all the $PATH variables are refreshed (otherwise you can get a "streamlit command not found" error)
 
 ```bash
 cd homecraft_vertex
@@ -139,18 +174,28 @@ pip install -r requirements.txt
 
 ```
 
-16. Set up the environment variables cloud_id (the elastic CloudID - find it on the Elastic admin console), cloud_pass and cloud_user (Elastic deployments's user details) and gcp_project_id (the GCP project you're working in)
+18. Authenticate the machine to the VertexAI SDK (installed via the requirements.txt file) and follow the instructions.
+```bash
+    gcloud auth application-default login
+```
+
+19. Set up the environment variables cloud_id (the elastic CloudID - find it on the Elastic admin console), cloud_pass and cloud_user (Elastic deployments's user details) and gcp_project_id (the GCP project you're working in)
 
 ```bash
-cloud_id='<replaceHereYourElasticCloudID>'
-cloud_user='elastic'
-cloud_pass='<replaceHereYourElasticDeploymentPassword>'
-gcp_project_id='<replaceHereTheGCPProjectID>'
+export cloud_id='<replaceHereYourElasticCloudID>'
+export cloud_user='elastic'
+export cloud_pass='<replaceHereYourElasticDeploymentPassword>'
+export vim gcp_project_id='<replaceHereTheGCPProjectID>'
 
 ```
 
+20. Run the app and access it from the public URL the console will display
+    ```bash
+streamlit run homecraft_home.py
 
+```
 
+22. Test your app!
 
 
 ## Sample questions
