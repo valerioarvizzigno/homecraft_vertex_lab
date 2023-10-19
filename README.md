@@ -39,7 +39,7 @@ docker run -it --rm elastic/eland eland_import_hub_model
  ```
 4. After the model finishes loading into Elastic, enter your deployment and from the left menu go to "Stack Management" -> "Machine Learning". You should notice the all-distilroberta-v1 model listed and in the "started" status. If a "out of sync" warning is shown, click on it and sync. Everything should be now set. Our ML model is up-and-running. We now are able to apply our transformer model to the documents we are going to ingest.
    
-5. Let's start with indexing some general retail data from the Ikea website. We will use the built-in web crawler feature.
+5. Let's start with indexing some general retail data from the Ikea website. We will use the built-in web crawler feature, configure it this way:
    - Search for "Web Crawler" in the Elastic search bar
    - Name the new index as "search-homecraft-ikea" (watch out the "search-" prefix is already there) and go next screen.
    - Specify "https://www.ikea.com/gb/en/" in the domain URL field and click "Validate Domain". A warning should appear, saying that a robots.txt file was found. Click on it to open it in a separate browser tab and continue by clicking "Add domain"
@@ -47,102 +47,26 @@ docker run -it --rm elastic/eland eland_import_hub_model
    - To avoid crawling too many pages and stick with the english ones we can define some crawl rules. Set as follows (rule order counts!):
      ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/1f0d52cc-2d01-4b5d-9c0e-927042ccd932)
 
+6. Now the new empty index should be automatically created for you. Have a look at it:
+   - From the left panel, in the "Enterprise Search" section, select "Content" and click on index to explore its details.
+   - You can also query it from the "Management" -> "Dev Tools" UI with the following query
+     ```bash
+     #Query index config
+     GET search-homecraft-ikea 
+     #Query index content
+      GET search-homecraft-ikea/_search
 
+7. Before starting crawling we need to attach an ingest pipeline to the newly create index, so every time a new document is indexed, it will be processed by our ML model that will enrich the document with an additional field, the vector representation of its content.
+   - Open the index from the Enterprise Search UI and navigate to the "Pipelines" tab
+   - Click on "Copy and customize" to create a custom pipeline associated to this index
+   - In the Machine Learning section click on "Add Inference Pipeline"
+   - Name the pipeline as "ml-inference-title-vector"
+   - Select your transformer model and go next screen
+   - Select the "Source field". This is the field that the ML model will process to create vectors from, and the UI suggests the ones automatically created from the web crawler. Select the "title" field as source field, leave everything as default and go on untile pipeline is created.
+  
+8. Check the newly created ingest pipeline searching it from the "Stack Management" -> "Ingest pipelines" section. You are able to analyze the processors (the processing tasks) listed in the pipeline and add/remove/modify them. Note also that you can specify exception handlers.
 
-
-7. Index general data from a retailer website (I used https://www.ikea.com/gb/en/) with Elastic Enterprise Search's webcrawler and give the index the "search-homecraft-ikea" name (for immediate compatibility with this repo code, otherwise change the index references in all homecraft_*.py files). For better crawling performance search the sitemap.xml file inside the robots.txt file of the target webserver, and add its path to the Site Maps tab. Set a custom ingest pipeline, named "ml-inference-title-vector", working directly at crawling time, to enrich crawled documents with dense vectors. Use the previously loaded ML model for inference on the "title" field as source, and set "title-vector" as target field for dense vectors.
-
-12. Before launching the crawler we need to set the mappings for the title-vector field on the index
-
-```bash
-POST search-homecraft-ikea/_mapping
-{
-  "properties": {
-    "title-vector": {
-      "type": "dense_vector",
-      "dims": 768,
-      "index": true,
-      "similarity": "dot_product"
-    }
-  }
-}
-```
-
-13. Start crawling.
-
-
-
-
-
-
-
-1. Install python on your local machine. If using Homebew on macOS simply use
-
-```bash
-brew install python@3.11  
-```
-
-3. (Optional) For better python environment management use Virtual Envs. Create a folder for your project in your favourite location, enter it and create a venv named "homecraftenv". You will then install all the libraries required only inside this venv instead of globally
-
-```bash
-python -m venv homecraftenv
-```
-
-4. (Optional) If step 3 is followed, activate your virtual env. Check here https://docs.python.org/3/tutorial/venv.html commands depending on your OS. For Unix or macOS use
-
-```bash
-source homecraftenv/bin/activate
-```
-
-5. Clone this repo in your project folder.
-
-```bash
-git clone https://github.com/valerioarvizzigno/homecraft_vertex.git
-```
-
-6. Install requirements needed to run the app from the requirements.txt file
-
-```bash
-pip install -r requirements.txt 
-```
-
-7. Install gcloud SDK. It is needed to connect to VertexAI APIs. (https://cloud.google.com/sdk/docs/install-sdk)
-   Follow the instructions at the link depending on your OS. If using Homebrew on macOS you can simply install it with
-
- ```bash
-brew install --cask google-cloud-sdk
-```  
-
-8. Init gcloud and follow the CLI instructions. You have to specify the working Google Cloud project
-
- ```bash
-gcloud init
-```  
-
-9. Authenticate the VertexAI SDK (it has been installed with requirements.txt). More info here https://googleapis.dev/python/google-api-core/latest/auth.html
-
- ```bash
-gcloud auth application-default login
-```  
-
-10. Load the all-distillroberta-v1 (https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model in you Elastic cluster via Eland client and start it. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell.
-
- ```bash
-git clone https://github.com/elastic/eland.git
-
-cd eland/
-
-docker build -t elastic/eland .
-
-docker run -it --rm elastic/eland eland_import_hub_model 
---url https://<elastic_user>:<elastic_password>@<your_elastic_endpoint>:9243/ 
---hub-model-id sentence-transformers/all-distilroberta-v1 
---start
- ```
-
-11. Index  general data from a retailer website (I used https://www.ikea.com/gb/en/) with Elastic Enterprise Search's webcrawler and give the index the "search-homecraft-ikea" name (for immediate compatibility with this repo code, otherwise change the index references in all homecraft_*.py files). For better crawling performance search the sitemap.xml file inside the robots.txt file of the target webserver, and add its path to the Site Maps tab. Set a custom ingest pipeline, named "ml-inference-title-vector", working directly at crawling time, to enrich crawled documents with dense vectors. Use the previously loaded ML model for inference on the "title" field as source, and set "title-vector" as target field for dense vectors.
-
-12. Before launching the crawler, set mappings for the title-vector field on the index
+9. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm.
 
 ```bash
 POST search-homecraft-ikea/_mapping
@@ -158,11 +82,12 @@ POST search-homecraft-ikea/_mapping
 }
 ```
 
-13. Start crawling.
+10. Start crawling. Go back on the index and click on the "Start Crawling" button on the top right corner of the page.
 
-14. Index the Home Depot products dataset (https://www.kaggle.com/datasets/thedevastator/the-home-depot-products-dataset) into elastic.
-
-15. Create a new empty index that will host the dense vectors called "home-depot-product-catalog-vector" (for immediate compatibility with this repo code, otherwise change the index references in all homecraft_*.py files) and specify mappings.
+11. Let's now ingest a product catalog, to let our users search for products via hybrid search (keywords + semantics):
+    - Load into Elastic this [Home Depot product catalog](https://www.kaggle.com/datasets/thedevastator/the-home-depot-products-dataset) via the "Upload File" feature (search for it in the top search bar). Click on "Import" and name the index "home-depot-product-catalog"
+    - Take a look at the document structure, the fields available and their content. You will notice there are title and descriptions fields as well. We will apply the inference on the title field, so we can reuse the previously created ingest pipeline
+    - From the Dev Tools console create a new empty index that will host the dense vectors called "home-depot-product-catalog-vector" and specify mappings.
 
 ```bash
 PUT /home-depot-product-catalog-vector 
@@ -180,7 +105,7 @@ POST home-depot-product-catalog-vector/_mapping
 }
 ```
 
-16. Re-index the product dataset through the same ingest pipeline previously created for the web-crawler. The new index will now have vectors embedded in documents in the title-vector field.
+  - Re-index the product dataset through the same ingest pipeline previously created for the web-crawler. The new index will now have vectors embedded in documents in the title-vector field.
 
 ```bash
 POST _reindex
@@ -194,18 +119,41 @@ POST _reindex
   }
 }
 ```
+  
 
-17. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move a [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic. Take a look ad tables available in this dataset withih BigQuery explorer UI. Copy the ID of the "Order_items" table and create a new Dataflow job to move data from this BQ table to an index named "bigquery-thelook-order-items". You need to create an API key on the Elastic cluster and pass it along with Elastic cluster's cloud_id, user and pass to the job config. This new index will be used for retrieving user orders.
+  - (Note that we used these steps to show how to use reindexing and ingest pipelines via API. You can still apply the pipelines via UI as done before with the search-homecraft-ikea index)
 
-18. Set up the environment variables cloud_id, cloud_pass, cloud_user (Elastic deployment) and gcp_project_id (the GCP project you're working in)
+12. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move a [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic. Take a look ad tables available in this dataset withih BigQuery explorer UI. Copy the ID of the "Order_items" table and create a new Dataflow job to move data from this BQ table to an index named "bigquery-thelook-order-items". You need to create an API key on the Elastic cluster and pass it along with Elastic cluster's cloud_id, user and pass to the job config. This new index will be used for retrieving user orders.
 
-19. Fine-tune text-bison@001 via VertexAI fine-tuning feature, using the fine-tuning/fine_tuning_dataset.jsonl file. This will instruct the model in advertizing partner network when specific questions are asked. For more information about fine-tuning look at https://cloud.google.com/vertex-ai/docs/generative-ai/models/tune-models#generative-ai-tune-model-python
+13. Create a small Google Cloud Compute Engine machine with default settings, with public ip address and access it via SSH. This will be used as our web-server for the front-ent application hosting our "intelligent search bar"
 
-20. Run streamlit app
+14. 5. Clone the [homecraft_vertex source-code repo](https://github.com/valerioarvizzigno/homecraft_vertex) on your CE machine.
 
- ```bash
-streamlit run homecraft_home.py
-```  
+```bash
+git clone https://github.com/valerioarvizzigno/homecraft_vertex.git
+```
+
+15. Install requirements needed to run the app from the requirements.txt file
+
+```bash
+cd homecraft_vertex
+pip install -r requirements.txt
+
+```
+
+16. Set up the environment variables cloud_id (the elastic CloudID - find it on the Elastic admin console), cloud_pass and cloud_user (Elastic deployments's user details) and gcp_project_id (the GCP project you're working in)
+
+```bash
+cloud_id='<replaceHereYourElasticCloudID)'
+cloud_user='elastic'
+cloud_pass='<replaceHereYourElasticDeploymentPassword'
+gcp_project_id='<replaceHereTheGCPProjectID'
+
+```
+
+
+
+
 
 ## Sample questions
 
