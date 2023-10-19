@@ -148,7 +148,7 @@ This will let users to submit queries for their past orders. We are not creating
 
 We are executing the classic "_search" API call, to query documents in Elasticsearch. The Semantic Search component is provided by the "knn" clause, where we specify the field we want to search vectors into (title-vector), the number of relevant documents we want to extract and the user provided query. Note that, to compare vectors also the user query has to be translated into text-embeddings from our ML model. We are then specifying the "text_embedding" field in the API call: this will let create vectors on-the-fly on the user query and compare them with the stored documents.
       
-14. We are now going to deploy our front-end app. Create a small Google Cloud Compute Engine linux machine with default settings, with public IPv4 address enabled, HTTP and HTTPS traffic enabled and access it via SSH. This will be used as our web-server for the front-end application, hosting our "intelligent search bar". We suggest this settings:
+14. We are now going to deploy our front-end app. Create a small Google Cloud Compute Engine linux machine with default settings, with public IPv4 address enabled, HTTP and HTTPS traffic enabled and access it via SSH. This will be used as our web-server for the front-end application, hosting our "intelligent search bar". We suggest these settings:
     - e2-medium
     - Debian11  
 
@@ -186,16 +186,14 @@ export cloud_id='<replaceHereYourElasticCloudID>'
 export cloud_user='elastic'
 export cloud_pass='<replaceHereYourElasticDeploymentPassword>'
 export vim gcp_project_id='<replaceHereTheGCPProjectID>'
-
 ```
 
 20. Run the app and access it from the public URL the console will display
-    ```bash
+```bash
 streamlit run homecraft_home.py
-
 ```
 
-22. Test your app!
+21. Test your app!
 
 
 ## Sample questions
