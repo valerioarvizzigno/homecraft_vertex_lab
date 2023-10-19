@@ -195,6 +195,9 @@ streamlit run homecraft_home.py
 
 21. Test your app!
 
+## Web-app code explanation
+
+WIP
 
 ## Sample questions
 
