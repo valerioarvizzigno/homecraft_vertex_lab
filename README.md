@@ -7,20 +7,18 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the c
 
 1. Sign-up to a [free trial account](https://www.elastic.co/cloud/elasticsearch-service/signup) of Elastic (or alternatively subscribe via GCP MP)
 2. Setup your Elastic cluster:
-  - select a GCP region, the latest Elastic version, Autoscaling set to "None"
-  - 1-zone 360GB Hot node
-  - 1-zone 4GB Machine Learning node
-  - 1-zone 4GB Kibana node
-  - 1-zone 4GB Enterprise Search
-  - Leave everything else as it is by default
-  - Create the cluster and download/note down the username/password
+   - select a GCP region, the latest Elastic version, Autoscaling set to "None"
+   - 1-zone 360GB Hot node
+   - 1-zone 4GB Machine Learning node
+   - 1-zone 4GB Kibana node
+   - 1-zone 4GB Enterprise Search
+   - Leave everything else as it is by default
+   - Create the cluster and download/note down the username/password
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/916ea8c4-1230-497a-bb06-cb09db57ee7c)
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/7e11519d-1b73-4f19-93b2-bd7f166a72ca)
 
 
-3. As a first step we need to prepare our Elastic ML nodes to create text-embedding out of content we will be indexing. We just need to load our transformer model of choice into Elastic and start it. This can be done through the [Eland Client](https://github.com/elastic/eland)
-We will use the [all-distillroberta-v1](https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell. Be sure the eland version you're cloning is compatible with the Elastic version you chose. If you used the latest Elastic version, there's generally no need to specify the Eland release version while cloning.
-
+3. As a first step we need to prepare our Elastic ML nodes to create text-embedding out of content we will be indexing. We just need to load our transformer model of choice into Elastic and start it. This can be done through the [Eland Client](https://github.com/elastic/eland). We will use the [all-distillroberta-v1](https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell. Be sure the eland version you're cloning is compatible with the Elastic version you chose. If you used the latest Elastic version, there's generally no need to specify the Eland release version while cloning.
   - Enter Google Cloud's console.
   - Open the Cloud Shell editor (you can use [this link](https://console.cloud.google.com/cloudshelleditor?cloudshell=true))
   - Enter the following commands. Take a look at the last one: you have to specify your Elastic username and password previously found + the elastic endpoint (find it at Elatic admin home -> "Manage" button on your deployment --> "Copy endpoint" on the Elasticsearch line)
