@@ -64,7 +64,7 @@ docker run -it --rm elastic/eland eland_import_hub_model
   
 8. Check the newly created ingest pipeline searching it from the "Stack Management" -> "Ingest pipelines" section. You are able to analyze the processors (the processing tasks) listed in the pipeline and add/remove/modify them. Note also that you can specify exception handlers.
 
-9. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm.
+9. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm. Let's execute the mapping API from the Dev Tools:
 
 ```bash
 POST search-homecraft-ikea/_mapping
@@ -80,7 +80,7 @@ POST search-homecraft-ikea/_mapping
 }
 ```
 
-10. Start crawling. Go back on the index and click on the "Start Crawling" button on the top right corner of the page.
+10. Start crawling: go back on the index and click on the "Start Crawling" button on the top right corner of the page.
 
 11. Let's now ingest a product catalog, to let our users search for products via hybrid search (keywords + semantics):
     - Load into Elastic this [Home Depot product catalog](https://www.kaggle.com/datasets/thedevastator/the-home-depot-products-dataset) via the "Upload File" feature (search for it in the top search bar). Click on "Import" and name the index "home-depot-product-catalog"
@@ -142,10 +142,10 @@ pip install -r requirements.txt
 16. Set up the environment variables cloud_id (the elastic CloudID - find it on the Elastic admin console), cloud_pass and cloud_user (Elastic deployments's user details) and gcp_project_id (the GCP project you're working in)
 
 ```bash
-cloud_id='<replaceHereYourElasticCloudID)'
+cloud_id='<replaceHereYourElasticCloudID>'
 cloud_user='elastic'
-cloud_pass='<replaceHereYourElasticDeploymentPassword'
-gcp_project_id='<replaceHereTheGCPProjectID'
+cloud_pass='<replaceHereYourElasticDeploymentPassword>'
+gcp_project_id='<replaceHereTheGCPProjectID>'
 
 ```
 
