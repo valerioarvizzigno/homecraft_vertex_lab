@@ -103,7 +103,7 @@ POST home-depot-product-catalog-vector/_mapping
 }
 ```
 
-  - Re-index the product dataset through the same ingest pipeline previously created for the web-crawler. The new index will now have vectors embedded in documents in the title-vector field.
+   - Re-index the product dataset through the same ingest pipeline previously created for the web-crawler. The new index will now have vectors embedded in documents in the title-vector field.
 
 ```bash
 POST _reindex
