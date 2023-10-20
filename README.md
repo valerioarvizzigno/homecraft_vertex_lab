@@ -14,14 +14,15 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the c
    - 1-zone 4GB Enterprise Search
    - Leave everything else as it is by default
    - Create the cluster and download/note down the username/password
+     
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/916ea8c4-1230-497a-bb06-cb09db57ee7c)
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/7e11519d-1b73-4f19-93b2-bd7f166a72ca)
 
 
 3. As a first step we need to prepare our Elastic ML nodes to create text-embedding out of content we will be indexing. We just need to load our transformer model of choice into Elastic and start it. This can be done through the [Eland Client](https://github.com/elastic/eland). We will use the [all-distillroberta-v1](https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell. Be sure the eland version you're cloning is compatible with the Elastic version you chose. If you used the latest Elastic version, there's generally no need to specify the Eland release version while cloning.
-  - Enter Google Cloud's console.
-  - Open the Cloud Shell editor (you can use [this link](https://console.cloud.google.com/cloudshelleditor?cloudshell=true))
-  - Enter the following commands. Take a look at the last one: you have to specify your Elastic username and password previously found + the elastic endpoint (find it at Elatic admin home -> "Manage" button on your deployment --> "Copy endpoint" on the Elasticsearch line)
+   - Enter Google Cloud console.
+   - Open the Cloud Shell editor (you can use [this link](https://console.cloud.google.com/cloudshelleditor?cloudshell=true))
+   - Enter the following commands. Take a look at the last one: you have to specify your Elastic username and password previously found + the elastic endpoint (find it at Elatic admin home -> "Manage" button on your deployment --> "Copy endpoint" on the Elasticsearch line)
   
  ```bash
 git clone https://github.com/elastic/eland.git
@@ -43,6 +44,7 @@ docker run -it --rm elastic/eland eland_import_hub_model
    - Specify "https://www.ikea.com/gb/en/" in the domain URL field and click "Validate Domain". A warning should appear, saying that a robots.txt file was found. Click on it to open it in a separate browser tab and continue by clicking "Add domain"
    - For better crawling performance search the sitemap.xml filepath inside the robots.txt file of the target webserver, and add its path to the Site Maps tab.
    - To avoid crawling too many pages and stick with the english ones we can define some crawl rules. Set as follows (rule order counts!):
+     
      ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/1f0d52cc-2d01-4b5d-9c0e-927042ccd932)
 
 6. Now the new empty index should be automatically created for you. Have a look at it:
@@ -60,13 +62,14 @@ docker run -it --rm elastic/eland eland_import_hub_model
    - In the Machine Learning section click on "Add Inference Pipeline"
    - Name the pipeline as "ml-inference-title-vector"
    - Select your transformer model and go next screen
-   - Select the "Source field". This is the field that the ML model will process to create vectors from, and the UI suggests the ones automatically created from the web crawler. Select the "title" field as source field, leave everything as default and go on untile pipeline is created.
+   - Select the "Source field". This is the field that the ML model will process to create vectors from, and the UI suggests the ones automatically created from the web crawler. Select the "title" field as source field, leave everything as default and go on until pipeline is created.
   
-8. Check the newly created ingest pipeline searching it from the "Stack Management" -> "Ingest pipelines" section. You are able to analyze the processors (the processing tasks) listed in the pipeline and add/remove/modify them. Note also that you can specify exception handlers.
+8. Check the newly created ingest pipeline searching for it from the "Stack Management" -> "Ingest pipelines" section. You are able to analyze the processors (the processing tasks) listed in the pipeline and add/remove/modify them. Note also that you can specify exception handlers.
+9. 
    ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/761cf843-c238-4f14-8fc2-47a6157f98b3)
 
 
-9. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm. Let's execute the mapping API from the Dev Tools:
+10. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm. Let's execute the mapping API from the Dev Tools:
 
 ```bash
 POST search-homecraft-ikea/_mapping
@@ -147,16 +150,22 @@ This will let users to submit queries for their past orders. We are not creating
 ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/1a6e0079-7b51-4791-adfe-6b863037a9b5)
 
 We are executing the classic "_search" API call, to query documents in Elasticsearch. The Semantic Search component is provided by the "knn" clause, where we specify the field we want to search vectors into (title-vector), the number of relevant documents we want to extract and the user provided query. Note that, to compare vectors also the user query has to be translated into text-embeddings from our ML model. We are then specifying the "text_embedding" field in the API call: this will let create vectors on-the-fly on the user query and compare them with the stored documents.
+The "query" clause, instead, will enable keyword search on the same elastic index. This way we are using both techniques but still receiving an unified output.
       
-14. We are now going to deploy our front-end app. Create a small Google Cloud Compute Engine linux machine with default settings, with public IPv4 address enabled, HTTP and HTTPS traffic enabled and access it via SSH. This will be used as our web-server for the front-end application, hosting our "intelligent search bar". We suggest these settings:
+14. We are now going to deploy our front-end app. Create a small Google Cloud Compute Engine linux machine with default settings, with public IPv4 address enabled (set it in the Advanced Settings -> Networking), HTTP and HTTPS traffic enabled (tick the checkboxes) and access it via SSH. This will be used as our web-server for the front-end application, hosting our "intelligent search bar". We suggest these settings:
     - e2-medium
     - Debian11  
 
-15. Update the machine, install git and pip. Check if python is installed (python3 --version), if not run also sudo apt instal python3.
+15. Update the machine, install git, python and pip.
 ```bash
 sudo apt-get update
-sudo apt install git #Press Y when prompted
-sudo apt install pip
+sudo apt install git #Press Y if prompted
+sudo apt install pip #Press Y if prompted
+
+#Check if python is installed (it probably is).
+python3 --version
+#If not python version is found install it
+sudo apt install python3
 
 ```
 
@@ -166,7 +175,7 @@ sudo apt install pip
 git clone https://github.com/valerioarvizzigno/homecraft_vertex.git
 ```
 
-17. Install requirements needed to run the app from the requirements.txt file. After this step, close the SSH session and reopen it, to ensure all the $PATH variables are refreshed (otherwise you can get a "streamlit command not found" error)
+17. Install requirements needed to run the app from the requirements.txt file. After this step, close the SSH session and reopen it, to ensure all the $PATH variables are refreshed (otherwise you can get a "streamlit command not found" error). You can have a look at the requirements.txt file content via vim/nano or your favourite editor.
 
 ```bash
 cd homecraft_vertex
@@ -179,7 +188,7 @@ pip install -r requirements.txt
     gcloud auth application-default login
 ```
 
-19. Set up the environment variables cloud_id (the elastic CloudID - find it on the Elastic admin console), cloud_pass and cloud_user (Elastic deployments's user details) and gcp_project_id (the GCP project you're working in)
+19. Set up the environment variables cloud_id (the elastic CloudID - find it on the Elastic admin console), cloud_pass and cloud_user (Elastic deployments's user details) and gcp_project_id (the GCP project you're working in). This variables are used inside of the app code to reference the correct systems to communicate with (Elastic cluster and VertexAI API in your GCP project)
 
 ```bash
 export cloud_id='<replaceHereYourElasticCloudID>'
@@ -188,7 +197,7 @@ export cloud_pass='<replaceHereYourElasticDeploymentPassword>'
 export vim gcp_project_id='<replaceHereTheGCPProjectID>'
 ```
 
-20. Run the app and access it from the public URL the console will display
+20. Run the app and access it copying the public IP:PORT the console will display in a web browser page
 ```bash
 streamlit run homecraft_home.py
 ```
