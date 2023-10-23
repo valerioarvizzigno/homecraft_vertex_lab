@@ -206,7 +206,68 @@ streamlit run homecraft_home.py
 
 ## Web-app code explanation
 
-WIP
+To fully understand how genAI models are used and how to integrate with VertexAI and PALM2 models have a look at the web-app code.
+The application is built with a easy-to-start python framework called "streamlit", it allows simple and fast front-end development for prototyping and demos.
+
+Most of the code is in the "homecraft_home.py" file, that we have referenced in the "run" command to startup the application. Additional pages can be found in the "pages" folder, which routing is automatically managed by streamlit. In the "homcraft_finetuned.py" page you can find the code to call a custom fine-tuned version of text-bison-001, re-trained via VertexAI. For more information about fine-tuning check [here](https://cloud.google.com/vertex-ai/docs/generative-ai/models/tune-models#generative-ai-tune-model-python)
+
+Let's briefly describe the source code:
+
+- The first lines will be importing the requried libraries. "Streamlit" for the main app structure, "elasticsearch" for abstracting the API calls and connections with the Elastic cluster, and "vertexAI", the Google's SDK for interacting with all the GenAI models and tools. As previously seen, we had to authenticate our machine for programmatic access to Google services to let our app call VertexAI APIs.
+
+```bash
+import os
+import streamlit as st
+from elasticsearch import Elasticsearch
+import vertexai
+from vertexai.language_models import TextGenerationModel
+```
+
+- We then set internal variables reading the environment ones we previously defined for the credentials/endpoints of Elastic and GCP project. Those will be used to setup the connections later.
+
+```bash
+projid = os.environ['gcp_project_id']
+cid = os.environ['cloud_id']
+cp = os.environ['cloud_pass']
+cu = os.environ['cloud_user']
+```
+
+- With the following settings we are configuring our GenAI model. We define which model we want to use, model's creativity and output lenght and we initialize the sdk.
+
+```bash
+parameters = {
+    "temperature": 0.4, # 0 - 1. The higher the temp the more creative and less on point answers become
+    "max_output_tokens": 606, #modify this number (1 - 1024) for short/longer answers
+    "top_p": 0.8,
+    "top_k": 40
+}
+vertexai.init(project=projid, location="us-central1")
+model = TextGenerationModel.from_pretrained("text-bison@001")
+```
+
+- From line 37 to 172 we set the connection with the Elastic cluster and define methods executing three main API calls: 
+a. search_products: use semantic search to find products in the HomeDepot dataset
+b. search_docs: use semantic search to find general retail information from the Ikea web-crawled index
+c. search_orders: search past user orders by keyword search.
+
+- The real magic happens in the following code. Here we capture the user input from the web form, we execute search queries on Elastic and the use the responses to fill the variables into the pre-defined prompt, meant to be sent to our GenAI model
+
+```bash
+# Generate and display response on form submission
+negResponse = "I'm unable to answer the question based on the information I have from Homecraft dataset."
+if submit_button:
+    es = es_connect(cid, cu, cp)
+    resp_products, url_products = search_products(query)
+    resp_docs, url_docs = search_docs(query)
+    resp_order_items = search_orders(1) # 1 is the hardcoded userid, to simplify this scenario. You should take user_id by user session
+    prompt = f"Answer this question: {query}.\n If product information is requested use the information provided in this JSON: {resp_products} listing the identified products in bullet points with this format: Product name, product key features, price, web url. \n For other questions use the documentation provided in these docs: {resp_docs} and your own knowledge. \n If the question contains requests for user past orders consider the following order list: {resp_order_items}"
+    answer = vertexAI(prompt)
+
+    if answer.strip() == '':
+        st.write(f"Search Assistant: \n\n{answer.strip()}")
+    else:
+        st.write(f"Search Assistant: \n\n{answer.strip()}\n\n")
+```
 
 ## Sample questions
 
