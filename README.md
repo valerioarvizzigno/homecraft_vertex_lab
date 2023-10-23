@@ -209,11 +209,11 @@ streamlit run homecraft_home.py
 To fully understand how genAI models are used and how to integrate with VertexAI and PALM2 models have a look at the web-app code.
 The application is built with a easy-to-start python framework called "streamlit", it allows simple and fast front-end development for prototyping and demos.
 
-Most of the code is in the "homecraft_home.py" file, that we have referenced in the "run" command to startup the application. Additional pages can be found in the "pages" folder, which routing is automatically managed by streamlit. In the "homcraft_finetuned.py" page you can find the code to call a custom fine-tuned version of text-bison-001, re-trained via VertexAI. For more information about fine-tuning check [here](https://cloud.google.com/vertex-ai/docs/generative-ai/models/tune-models#generative-ai-tune-model-python)
+Most of the code is in the "homecraft_home.py" file, that we have referenced in the "run" command to startup the application. Additional pages can be found in the "pages" folder, which routing is automatically managed by streamlit. In the "homecraft_finetuned.py" page you can find the code to call a custom fine-tuned version of text-bison-001, re-trained via VertexAI. For more information about fine-tuning check [here](https://cloud.google.com/vertex-ai/docs/generative-ai/models/tune-models#generative-ai-tune-model-python).
 
 Let's briefly describe the source code:
 
-- The first lines will be importing the requried libraries. "Streamlit" for the main app structure, "elasticsearch" for abstracting the API calls and connections with the Elastic cluster, and "vertexAI", the Google's SDK for interacting with all the GenAI models and tools. As previously seen, we had to authenticate our machine for programmatic access to Google services to let our app call VertexAI APIs.
+- The first lines will be importing the requried libraries. "streamlit" for the app structure, "elasticsearch" for abstracting the API calls and connections with the Elastic cluster, and "vertexAI", the Google's SDK for interacting with all the GenAI models and tools. As previously seen, we had to authenticate our machine for programmatic access to Google services to let our app call VertexAI APIs.
 
 ```bash
 import os
@@ -246,11 +246,11 @@ model = TextGenerationModel.from_pretrained("text-bison@001")
 ```
 
 - From line 37 to 172 we set the connection with the Elastic cluster and define methods executing three main API calls: 
-a. search_products: use semantic search to find products in the HomeDepot dataset
-b. search_docs: use semantic search to find general retail information from the Ikea web-crawled index
+a. search_products: use semantic search to find products in the HomeDepot dataset;
+b. search_docs: use semantic search to find general retail information from the Ikea web-crawled index;
 c. search_orders: search past user orders by keyword search.
 
-- The real magic happens in the following code. Here we capture the user input from the web form, we execute search queries on Elastic and the use the responses to fill the variables into the pre-defined prompt, meant to be sent to our GenAI model
+- The real magic happens in the following code. Here we capture the user input from the web form, we execute search queries on Elastic and the use the responses to fill the variables into the pre-defined prompt, meant to be sent to our GenAI model.
 
 ```bash
 # Generate and display response on form submission
