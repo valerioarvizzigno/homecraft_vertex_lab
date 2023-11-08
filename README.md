@@ -31,10 +31,7 @@ cd eland/
 
 docker build -t elastic/eland .
 
-docker run -it --rm elastic/eland eland_import_hub_model 
---url https://<elastic_user>:<elastic_password>@<your_elastic_endpoint>:9243/ 
---hub-model-id sentence-transformers/all-distilroberta-v1 
---start
+docker run -it --rm elastic/eland eland_import_hub_model --url https://<elastic_user>:<elastic_password>@<your_elastic_endpoint>:9243/ --hub-model-id sentence-transformers/all-distilroberta-v1 --start
  ```
 4. After the model finishes loading into Elastic, enter your deployment and from the left menu go to "Stack Management" -> "Machine Learning". You should notice the all-distilroberta-v1 model listed and in the "started" status. If a "out of sync" warning is shown, click on it and sync. Everything should be now set. Our ML model is up-and-running. We now are able to apply our transformer model to the documents we are going to ingest.
    
