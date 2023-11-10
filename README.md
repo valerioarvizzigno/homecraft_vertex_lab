@@ -193,7 +193,7 @@ pip install -r requirements.txt
 export cloud_id='<replaceHereYourElasticCloudID>'
 export cloud_user='elastic'
 export cloud_pass='<replaceHereYourElasticDeploymentPassword>'
-export vim gcp_project_id='<replaceHereTheGCPProjectID>'
+export gcp_project_id='<replaceHereTheGCPProjectID>'
 ```
 
 20. Run the app and access it copying the public IP:PORT the console will display in a web browser page
