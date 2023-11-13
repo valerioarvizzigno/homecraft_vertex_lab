@@ -130,14 +130,14 @@ POST _reindex
     - Take a look at the tables available in this dataset within the BigQuery explorer UI. On the left panel open the "thelook_ecommerce" dataset and click on the "Order_items" table. Explore the content
     - Copy the ID (by clicking on the 3 dots) of the "Order_items" table and search for Dataflow in the Google Cloud service search bar
     - Create a new Dataflow job from template, selecting the "BigQuery to Elasticsearch" built-in template. You will need to specify:
-      a. The job's name
-      b. The region to run the job in (preferably choose the same you deployed the Elastic cluster in to minimize latencies and costs)
-      c. The Elastic cluster's "cloudID"
-      d. The Elastic API key to let Dataflow connect with Elastic(check [here](https://www.elastic.co/guide/en/cloud/current/ec-api-keys.html) how to generate one)
-      e. The index name as "bigquery-thelook-order-items". Dataflow will automatically create this new index where all the table lines will be sent.
-      f. The dataset and table you want to read from (first field of the Optional Parameters): bigquery-public-data.thelook_ecommerce.order_items
-      g. Elastic username and password
-    - Launch the job
+       - The job's name
+       - The region to run the job in (preferably choose the same you deployed the Elastic cluster in to minimize latencies and costs)
+       - The Elastic cluster's "cloudID"
+       - The Elastic API key to let Dataflow connect with Elastic(check [here](https://www.elastic.co/guide/en/cloud/current/ec-api-keys.html) how to generate one)
+       - The index name as "bigquery-thelook-order-items". Dataflow will automatically create this new index where all the table lines will be sent.
+       - The dataset and table you want to read from (first field of the Optional Parameters): bigquery-public-data.thelook_ecommerce.order_items
+       - Elastic username and password
+       - Launch the job
       
 ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/8708b87f-5855-447d-b6de-db7632a515cb)
 
