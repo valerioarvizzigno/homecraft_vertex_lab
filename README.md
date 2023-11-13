@@ -2,7 +2,7 @@
 
 This is the step-by-step guide for enablement hands-on labs, and refers to the code repo https://github.com/valerioarvizzigno/homecraft_vertex
 
---- TESTED WITH ELASTIC CLOUD 8.8.1 ---
+--- TESTED WITH ELASTIC CLOUD 8.8.1 AND ELAND 8.3 ---
 
 
 ## Configuration steps
@@ -27,7 +27,7 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the c
    - Enter the following commands. Take a look at the last one: you have to specify your Elastic username and password previously found + the elastic endpoint (find it at Elatic admin home -> "Manage" button on your deployment --> "Copy endpoint" on the Elasticsearch line)
   
  ```bash
-git clone https://github.com/elastic/eland.git #use -b vX.X.X option for specific eland version
+git clone https://github.com/elastic/eland.git #use -b vX.X.X option for specific eland version. This lab is tested with v8.3
 
 cd eland/
 
