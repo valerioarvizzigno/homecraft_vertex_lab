@@ -125,7 +125,7 @@ POST _reindex
 
   - (Note that we used these steps to show how to use reindexing and ingest pipelines via API. You can still apply the pipelines via UI as done before with the search-homecraft-ikea index)
 
-12. To complete our data baseline we can also import an e-commerce order history. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move this [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic.
+12. To complete our data baseline we can also import an e-commerce order history. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move this [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic. Be aware the UI and available fields/label may visually change on Dataflow depending on the region you choose, but it should work regardlessly. This lab was tested with us-central1 region.
     - Click on "View Dataset" after reaching the Google Console with the previous link
     - Take a look at the tables available in this dataset within the BigQuery explorer UI. On the left panel open the "thelook_ecommerce" dataset and click on the "Order_items" table. Explore the content
     - Copy the ID (by clicking on the 3 dots) of the "Order_items" table and search for Dataflow in the Google Cloud service search bar
@@ -135,7 +135,7 @@ POST _reindex
        - The Elastic cluster's "cloudID"
        - The Elastic API key to let Dataflow connect with Elastic(check [here](https://www.elastic.co/guide/en/cloud/current/ec-api-keys.html) how to generate one)
        - The index name as "bigquery-thelook-order-items". Dataflow will automatically create this new index where all the table lines will be sent.
-       - The dataset and table you want to read from (first field of the Optional Parameters): bigquery-public-data.thelook_ecommerce.order_items
+       - The dataset and table you want to read from (first field of the Optional Parameters): bigquery-public-data.thelook_ecommerce.order_items (some regions need bigquery-public-data:thelook_ecommerce.order_items instead - : after project name instead of .)
        - Elastic username and password
        - Launch the job
       
