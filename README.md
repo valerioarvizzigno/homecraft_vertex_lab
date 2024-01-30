@@ -63,11 +63,25 @@ docker run -it --rm elastic/eland eland_import_hub_model --url https://<elastic_
    - In the Machine Learning section click on "Add Inference Pipeline"
    - Name the pipeline as "ml-inference-title-vector"
    - Select your transformer model and go next screen
-   - Select the "Source field". This is the field that the ML model will process to create vectors from, and the UI suggests the ones automatically created from the web crawler. Select the "title" field as source field, leave everything as default and go on until pipeline is created.
+   - Select the "Source field". This is the field that the ML model will process to create vectors from, and the UI suggests the ones automatically created from the web crawler. Select the "title" field as source field, specify "title-vector" as target field, leave everything else as default and go on until pipeline is created.
   
 8. Check the newly created ingest pipeline searching for it from the "Stack Management" -> "Ingest pipelines" section. You are able to analyze the processors (the processing tasks) listed in the pipeline and add/remove/modify them. Note also that you can specify exception handlers.
  
    ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/761cf843-c238-4f14-8fc2-47a6157f98b3)
+
+8a. (Only if on Elastic 8.12, not the 8.3) As later we will be using "title-vector" field for kNN search in our application (and not the default "ml.inference.title-vector.predicted_values") let's add an additional SET processor at the bottom of the processors list as in the image below:
+
+![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/871c5b93-1a8e-4337-b98c-447456351c89)
+
+Be aware of adding the following condition to handle errors:
+
+```bash
+ctx?.ml?.inference != null && ctx.ml.inference['title-vector'] != null
+```
+
+For extra safety also add a REMOVE processor at the beginning of the processors list, to remove any occasional presence of "title-vector" field names from sources, as following:
+
+![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/405bb7dd-80aa-48bf-aea8-ce8db5e0b607)
 
 
 9. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm. Let's execute the mapping API from the Dev Tools:
