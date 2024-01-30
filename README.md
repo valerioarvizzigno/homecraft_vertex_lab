@@ -10,7 +10,7 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the c
 1. User your own Elastic environment or sign-up to a [free trial account](https://www.elastic.co/cloud/elasticsearch-service/signup) of Elastic (or alternatively subscribe via GCP MP)
 2. Setup your Elastic cluster:
    - select a GCP region, the latest Elastic version, Autoscaling set to "None"
-   - 1-zone 360GB Hot node
+   - 1-zone 8GB (memory) Hot node
    - 1-zone 4GB Machine Learning node
    - 1-zone 4GB Kibana node
    - 1-zone 4GB Enterprise Search
