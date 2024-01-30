@@ -17,7 +17,7 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the c
    - Leave everything else as it is by default
    - Create the cluster and download/note down the username/password
   
-   (If on the Elastic trial, you're not able to specify topology on the initial screen, so create the cluster as per suggested default and then go to "Edit My Deployment" in the left panel -> "Actions" menu ->Edit deployment and set it as the list before (don't worry if some node doesn't match extactly, just max out everything)
+   (If on the Elastic trial, you're not able to specify topology on the initial screen, so create the cluster as per suggested default and then go to "Edit My Deployment" in the left panel -> "Actions" menu -> "Edit deployment" and set it as the list before (don't worry if some node doesn't match exactly, just max out everything)
      
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/916ea8c4-1230-497a-bb06-cb09db57ee7c)
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/7e11519d-1b73-4f19-93b2-bd7f166a72ca)
