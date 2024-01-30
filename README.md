@@ -2,7 +2,7 @@
 
 This is the step-by-step guide for enablement hands-on labs, and refers to the code repo https://github.com/valerioarvizzigno/homecraft_vertex
 
---- TESTED WITH ELASTIC CLOUD 8.8.1 AND ELAND 8.3 ---
+--- TESTED WITH ELASTIC CLOUD ELASTIC CLOUD 8.12 + ELAND 8.12 (and Elastic Cloyd 8.8.1 + ELAND 8.3)   ---
 
 
 ## Configuration steps
