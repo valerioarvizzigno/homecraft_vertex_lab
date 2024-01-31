@@ -29,7 +29,7 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the s
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/7e11519d-1b73-4f19-93b2-bd7f166a72ca)
 
 
-3. **Configuring Machine Learning nodes***
+3. **Configuring Machine Learning nodes**
    
    As a first step we need to prepare our Elastic ML nodes to create text-embedding out of content we will be indexing. We just need to load our transformer model of choice into Elastic and start it. This can be done through the [Eland Client](https://github.com/elastic/eland). We will use the [all-distillroberta-v1](https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell. Be sure the eland version you're cloning is compatible with the Elastic version you choose (e.g. generally eland 8.12 works with elastic cloud 8.12)! If you used the latest Elastic version, there's generally no need to specify the Eland release version while cloning.
    - On Kibana --> Stack Management --> Security --> Users create a new user with "superuser" role attached
@@ -46,6 +46,7 @@ docker build -t elastic/eland .
 
 docker run -it --rm elastic/eland eland_import_hub_model --url https://<elastic_user>:<elastic_password>@<your_elastic_endpoint>:9243/ --hub-model-id sentence-transformers/all-distilroberta-v1 --start
  ```
+
 4. **Check and test your ML model**
 
    After the model finishes loading into Elastic, enter your deployment and from the left menu go to "Stack Management" -> "Machine Learning". You should notice the all-distilroberta-v1 model listed and in the "started" status. If a "out of sync" warning is shown, click on it and sync. Everything should be now set. Our ML model is up-and-running. We now are able to apply our transformer model to the documents we are going to ingest. If you want, you can test it from the same page, clicking on three-dots menu on the right side of the model name and selecting "Test model".
@@ -85,9 +86,11 @@ docker run -it --rm elastic/eland eland_import_hub_model --url https://<elastic_
  
    ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/761cf843-c238-4f14-8fc2-47a6157f98b3)
 
+
 8a. (Only if on Elastic 8.12, not the 8.3) As later we will be using "title-vector" field for kNN search in our application (and not the default "ml.inference.title-vector.predicted_values") let's add an additional SET processor at the bottom of the processors list as in the image below:
 
 ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/871c5b93-1a8e-4337-b98c-447456351c89)
+
 
 Be aware of adding the following condition to handle errors:
 
