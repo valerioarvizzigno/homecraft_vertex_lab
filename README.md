@@ -1,6 +1,6 @@
-# Homecraft Retail lab script: build an e-commerce search bar with Elastic ESRE and Google's GenAI
+# Homecraft Retail lab script: build an e-commerce search app with Elastic ESRE and Google's GenAI
 
-This is the step-by-step guide for enablement hands-on labs, and refers to the code repo https://github.com/valerioarvizzigno/homecraft_vertex
+This is the step-by-step guide for enablement hands-on labs, and refers to the search app code repo in its [Palm2 version](https://github.com/valerioarvizzigno/homecraft_vertex) and [Gemini version](https://github.com/valerioarvizzigno/homecraft_gemini). 
 
 --- TESTED WITH ELASTIC CLOUD ELASTIC CLOUD 8.12 + ELAND 8.12 (and Elastic Cloud 8.8.1 + ELAND 8.3)   ---
 
