@@ -33,10 +33,10 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the s
 3. **Configuring Machine Learning nodes**
    
    As a first step we need to prepare our Elastic ML nodes to create text-embedding out of content we will be indexing. We just need to load our transformer model of choice into Elastic and start it. This can be done through the [Eland Client](https://github.com/elastic/eland). We will use the [all-distillroberta-v1](https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell. Be sure the eland version you're cloning is compatible with the Elastic version you choose (e.g. generally eland 8.12 works with elastic cloud 8.12)! If you used the latest Elastic version, there's generally no need to specify the Eland release version while cloning.
-   - On Kibana --> Stack Management --> Security --> Users create a new user with "superuser" role attached
+   - On Kibana (left panel) --> Stack Management --> Security --> Users create a new user with "superuser" role attached
    - Enter Google Cloud console
    - Open the Cloud Shell editor (you can use [this link](https://console.cloud.google.com/cloudshelleditor?cloudshell=true))
-   - Enter the following commands. Take a look at the last one: you have to specify your Elastic username and password previously created + the elastic endpoint (find it at Elatic admin home -> "Manage" button on your deployment --> "Copy endpoint" on the Elasticsearch line)
+   - Enter the following commands. Take a look at the last one: you have to specify your Elastic username and password previously created (remove < >) + the elastic endpoint (find it at Elatic admin home -> "Manage" button on your deployment --> "Copy endpoint" on the Elasticsearch line)
   
  ```bash
 git clone https://github.com/elastic/eland.git #use -b vX.X.X option for specific eland version.
