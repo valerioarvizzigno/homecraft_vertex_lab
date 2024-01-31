@@ -17,7 +17,7 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the s
    - select a GCP region, Elastic version 8.12, Autoscaling set to "None"
    - 1-zone 8GB (memory) Hot node (or 2-zone x 4GB)
    - 1-zone 4GB Machine Learning node
-   - 1-zone 4GB Kibana node
+   - 1-zone 1GB Kibana node
    - 1-zone 4GB Enterprise Search
    - Leave everything else as it is by default
    - Create the cluster and download/note down the admin username/password
