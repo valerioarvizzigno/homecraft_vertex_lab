@@ -7,10 +7,14 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the s
 
 ## Configuration steps
 
-1. User your own Elastic environment or sign-up to a [free trial account](https://www.elastic.co/cloud/elasticsearch-service/signup) of Elastic (or alternatively subscribe via GCP MP)
-2. Setup your Elastic cluster:
-   - select a GCP region, the latest Elastic version, Autoscaling set to "None"
-   - 1-zone 8GB (memory) Hot node
+1. **Your Elastic Cloud account**
+   User your own Elastic environment or sign-up to a [free trial account](https://www.elastic.co/cloud/elasticsearch-service/signup) of Elastic (or alternatively subscribe via GCP MP)
+   
+2. **Setup your cluster**
+   
+   To setup your Elastic cluster for this lab:
+   - select a GCP region, Elastic version 8.12, Autoscaling set to "None"
+   - 1-zone 8GB (memory) Hot node (or 2-zone x 4GB)
    - 1-zone 4GB Machine Learning node
    - 1-zone 4GB Kibana node
    - 1-zone 4GB Enterprise Search
@@ -24,7 +28,9 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the s
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/7e11519d-1b73-4f19-93b2-bd7f166a72ca)
 
 
-3. As a first step we need to prepare our Elastic ML nodes to create text-embedding out of content we will be indexing. We just need to load our transformer model of choice into Elastic and start it. This can be done through the [Eland Client](https://github.com/elastic/eland). We will use the [all-distillroberta-v1](https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell. Be sure the eland version you're cloning is compatible with the Elastic version you choose (e.g. generally eland 8.12 works with elastic cloud 8.12)! If you used the latest Elastic version, there's generally no need to specify the Eland release version while cloning.
+3. **Configuring Machine Learning nodes***
+   
+   As a first step we need to prepare our Elastic ML nodes to create text-embedding out of content we will be indexing. We just need to load our transformer model of choice into Elastic and start it. This can be done through the [Eland Client](https://github.com/elastic/eland). We will use the [all-distillroberta-v1](https://huggingface.co/sentence-transformers/all-distilroberta-v1) ML model. To run Eland client you need docker installed. An easy way to accomplish this step without python/docker installation is via Google's Cloud Shell. Be sure the eland version you're cloning is compatible with the Elastic version you choose (e.g. generally eland 8.12 works with elastic cloud 8.12)! If you used the latest Elastic version, there's generally no need to specify the Eland release version while cloning.
    - On Kibana --> Stack Management --> Security --> Users create a new user with "superuser" role attached
    - Enter Google Cloud console
    - Open the Cloud Shell editor (you can use [this link](https://console.cloud.google.com/cloudshelleditor?cloudshell=true))
@@ -39,9 +45,12 @@ docker build -t elastic/eland .
 
 docker run -it --rm elastic/eland eland_import_hub_model --url https://<elastic_user>:<elastic_password>@<your_elastic_endpoint>:9243/ --hub-model-id sentence-transformers/all-distilroberta-v1 --start
  ```
-4. After the model finishes loading into Elastic, enter your deployment and from the left menu go to "Stack Management" -> "Machine Learning". You should notice the all-distilroberta-v1 model listed and in the "started" status. If a "out of sync" warning is shown, click on it and sync. Everything should be now set. Our ML model is up-and-running. We now are able to apply our transformer model to the documents we are going to ingest. If you want, you can test it from the same page, clicking on three-dots menu on the right side of the model name and selecting "Test model".
+4. **Check and test your ML model**
+   After the model finishes loading into Elastic, enter your deployment and from the left menu go to "Stack Management" -> "Machine Learning". You should notice the all-distilroberta-v1 model listed and in the "started" status. If a "out of sync" warning is shown, click on it and sync. Everything should be now set. Our ML model is up-and-running. We now are able to apply our transformer model to the documents we are going to ingest. If you want, you can test it from the same page, clicking on three-dots menu on the right side of the model name and selecting "Test model".
+
    
-5. Let's start with indexing some general retail data from the Ikea website. We will use the built-in web crawler feature, configure it this way:
+5. **Ingest Part 1: The Web Crawler**
+   Let's start with indexing some general retail data from the Ikea website. We will use the built-in web crawler feature, configure it this way:
    - Search for "Web Crawler" in the Elastic search bar
    - Name the new index as "search-homecraft-ikea" (watch out the "search-" prefix is already there) and go next screen.
    - Specify "https://www.ikea.com/gb/en/" in the domain URL field and click "Validate Domain". A warning should appear, saying that a robots.txt file was found. Click on it to open it in a separate browser tab and continue by clicking "Add domain"
@@ -59,7 +68,8 @@ docker run -it --rm elastic/eland eland_import_hub_model --url https://<elastic_
      #Query index content
       GET search-homecraft-ikea/_search
 
-7. Before start crawling we need to attach an ingest pipeline to the newly create index, so every time a new document is indexed, it will be processed by our ML model that will enrich the document with an additional field, the vector representation of its content.
+7. **Creating an ingest pipeline for inference**
+   Before start crawling we need to attach an ingest pipeline to the newly create index, so every time a new document is indexed, it will be processed by our ML model that will enrich the document with an additional field, the vector representation of its content.
    - Open the index from the Enterprise Search UI and navigate to the "Pipelines" tab
    - Click on "Copy and customize" to create a custom pipeline associated to this index
    - In the Machine Learning section click on "Add Inference Pipeline"
@@ -86,7 +96,8 @@ For extra safety also add a REMOVE processor at the beginning of the processors 
 ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/405bb7dd-80aa-48bf-aea8-ce8db5e0b607)
 
 
-9. Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm. Let's execute the mapping API from the Dev Tools:
+9. **Creating dense_vector mappings**
+    Before launching the crawler we need to set the mappings for the target field where the vetors will be stored, specifying the "title-vector" field is of type "dense_vector", vector dimensions and its similarity algorithm. Let's execute the mapping API from the Dev Tools:
 
 ```bash
 POST search-homecraft-ikea/_mapping
@@ -102,9 +113,11 @@ POST search-homecraft-ikea/_mapping
 }
 ```
 
-10. Start crawling: go back on the index and click on the "Start Crawling" button on the top right corner of the page. You will see the document count slowly increasing while the web crawler runs.
+10. **Launch the web crawler!**
+    Start crawling: go back on the index and click on the "Start Crawling" button on the top right corner of the page. You will see the document count slowly increasing while the web crawler runs.
 
-11. Let's now ingest a product catalog, to let our users search for products via hybrid search (keywords + semantics):
+11. **Ingest Part 2: product catalog dataset upload**
+    Let's now ingest a product catalog, to let our users search for products via hybrid search (keywords + semantics):
     - Load into Elastic this [Home Depot product catalog](https://www.kaggle.com/datasets/thedevastator/the-home-depot-products-dataset) via the "Upload File" feature (search for it in the top search bar). Click on "Import" and name the index "home-depot-product-catalog"
     - Take a look at the document structure, the fields available and their content. You will notice there are title and descriptions fields as well. We will apply the inference on the title field, so we can reuse the previously created ingest pipeline
     - From the Dev Tools console create a new empty index that will host the dense vectors called "home-depot-product-catalog-vector" and specify mappings.
@@ -143,7 +156,8 @@ POST _reindex
 
   - (Note that we used these steps to show how to use reindexing and ingest pipelines via API. You can still apply the pipelines via UI as done before with the search-homecraft-ikea index)
 
-12. To complete our data baseline we can also import an e-commerce order history. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move this [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic. Be aware the UI and available fields/label may visually change on Dataflow depending on the region you choose, but it should work regardlessly. This lab was tested with us-central1 region.
+12. **Ingest Part 3: data from BigQuery via Dataflow**
+    To complete our data baseline we can also import an e-commerce order history. Leverage the BigQuery to Elasticsearch Dataflow's [native integration](https://www.elastic.co/blog/ingest-data-directly-from-google-bigquery-into-elastic-using-google-dataflow) to move this [sample e-commerce dataset](https://console.cloud.google.com/marketplace/product/bigquery-public-data/thelook-ecommerce?project=elastic-sa) into Elastic. Be aware the UI and available fields/label may visually change on Dataflow depending on the region you choose, but it should work regardlessly. This lab was tested with us-central1 region.
     - Click on "View Dataset" after reaching the Google Console with the previous link
     - Take a look at the tables available in this dataset within the BigQuery explorer UI. On the left panel open the "thelook_ecommerce" dataset and click on the "Order_items" table. Explore the content
     - Copy the ID (by clicking on the 3 dots) of the "Order_items" table and search for Dataflow in the Google Cloud service search bar
@@ -162,14 +176,16 @@ POST _reindex
 
 This will let users to submit queries for their past orders. We are not creating embeddings on this index because keyword search will suffice (e.g. searching for userID, productID). Wait for the job to complete and check the data is correctly indexed in Elastic from the indices list in the UI.
 
-13. Let's test a Vector Search query directly from the Kibana Dev Tools. We will later see this embedded in our app. You can copy paste the following query from [this file](https://github.com/valerioarvizzigno/homecraft_vertex/blob/main/Additional%20sources/helpful_elastic_api_calls).
+13. **Test Vector Search**
+    Let's test a kNN query directly from the Kibana Dev Tools. We will later see this embedded in our app. You can copy paste the following query from [this file](https://github.com/valerioarvizzigno/homecraft_vertex/blob/main/Additional%20sources/helpful_elastic_api_calls).
 
 ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/1a6e0079-7b51-4791-adfe-6b863037a9b5)
 
 We are executing the classic "_search" API call, to query documents in Elasticsearch. The Semantic Search component is provided by the "knn" clause, where we specify the field we want to search vectors into (title-vector), the number of relevant documents we want to extract and the user provided query. Note that, to compare vectors also the user query has to be translated into text-embeddings from our ML model. We are then specifying the "text_embedding" field in the API call: this will let create vectors on-the-fly on the user query and compare them with the stored documents.
 The "query" clause, instead, will enable keyword search on the same elastic index. This way we are using both techniques but still receiving an unified output.
       
-14. We are now going to deploy our front-end app. Create a small Google Cloud Compute Engine linux machine with default settings, with public IPv4 address enabled (set it in the Advanced Settings -> Networking), HTTP and HTTPS traffic enabled (tick the checkboxes) and access it via SSH. This will be used as our web-server for the front-end application, hosting our "intelligent search bar". We suggest these settings:
+14. **Deploying the search app front-end on Compute Engine**
+    We are now going to deploy our front-end app. Create a small Google Cloud Compute Engine linux machine with default settings, with public IPv4 address enabled (set it in the Advanced Settings -> Networking), HTTP and HTTPS traffic enabled (tick the checkboxes) and access it via SSH. This will be used as our web-server for the front-end application, hosting our "intelligent search bar". We suggest these settings:
     - e2-medium
     - Debian11  
 
@@ -192,7 +208,8 @@ sudo apt install python3
 git clone https://github.com/valerioarvizzigno/homecraft_vertex.git
 ```
 
-17. Install requirements needed to run the app from the requirements.txt file. After this step, close the SSH session and reopen it, to ensure all the $PATH variables are refreshed (otherwise you can get a "streamlit command not found" error). You can have a look at the requirements.txt file content via vim/nano or your favourite editor.
+17. **Configure VertexAI and Elasticsearch SDKs**
+     Install requirements needed to run the app from the requirements.txt file. After this step, close the SSH session and reopen it, to ensure all the $PATH variables are refreshed (otherwise you can get a "streamlit command not found" error). You can have a look at the requirements.txt file content via vim/nano or your favourite editor.
 
 ```bash
 cd homecraft_vertex
@@ -214,7 +231,8 @@ export cloud_pass='<replaceHereYourElasticDeploymentPassword>'
 export gcp_project_id='<replaceHereTheGCPProjectID>'
 ```
 
-20. Run the app and access it copying the public IP:PORT the console will display in a web browser page
+20. **Run the app!**
+    Run the app and access it copying the public IP:PORT the console will display in a web browser page
 ```bash
 streamlit run homecraft_home.py
 ```
