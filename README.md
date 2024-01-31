@@ -23,7 +23,7 @@ This is the step-by-step guide for enablement hands-on labs, and refers to the s
    - Create the cluster and download/note down the admin username/password
    - Explore the Kibana console and the management console
   
-   (If on the Elastic trial, you're not able to specify topology on the initial screen, so create the cluster as per suggested default and then go to "Edit My Deployment" in the left panel -> "Actions" menu -> "Edit deployment" and set it as the list before (don't worry if some node doesn't match exactly, just max out everything)
+   (If on the Elastic trial, you're not able to specify topology on the initial screen, so create the cluster as per suggested default and then go to "Edit My Deployment" in the left panel -> "Actions" menu -> "Edit deployment" and set it as the list before. Don't worry if some node size doesn't match exactly the previous, just max out everything)
      
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/0b3782f9-a045-416e-90ce-8c4aeba8badd)
   ![image](https://github.com/valerioarvizzigno/homecraft_vertex_lab/assets/122872322/7e11519d-1b73-4f19-93b2-bd7f166a72ca)
